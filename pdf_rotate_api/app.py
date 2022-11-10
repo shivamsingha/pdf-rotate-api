@@ -1,8 +1,7 @@
-import json
 import os
 import hashlib
 from pathlib import Path
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 from werkzeug.security import safe_join
 from constants import UPLOAD_FOLDER, ALLOWED_EXTENSIONS
@@ -30,12 +29,12 @@ def upload():
     page_number = request.form["page_number"]
 
     if angle_of_rotation not in ["90", "180", "270"]:
-        return json.dumps(
+        return jsonify(
             {"error": "Invalid Input", "message": "Only 90, 180, 270 degrees allowed."}
         )
 
     if page_number != "" and not page_number.isnumeric():
-        return json.dumps(
+        return jsonify(
             {
                 "error": "Invalid Input",
                 "message": "page_number should be a number between 1 and n (n is the number of pages in the pdf file).",
@@ -54,9 +53,7 @@ def upload():
 
         rotate(filename, angle_of_rotation, page_number, file)
 
-        return json.dumps(
-            {"status": "processing", "downloadURL": f"/output_{filename}"}
-        )
+        return jsonify({"status": "processing", "downloadURL": f"/output_{filename}"})
 
 
 @app.route("/<path:filename>", methods=["GET"])
