@@ -2,6 +2,7 @@ import os
 import hashlib
 from pathlib import Path
 from flask import Flask, request, send_from_directory, jsonify
+from flask_executor import Executor
 from werkzeug.utils import secure_filename
 from werkzeug.security import safe_join
 from constants import UPLOAD_FOLDER, ALLOWED_EXTENSIONS
@@ -10,7 +11,10 @@ from rotate import rotate
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1000 * 1000
+app.config['EXECUTOR_TYPE'] = 'process'
+app.config['EXECUTOR_PROPAGATE_EXCEPTIONS'] = True
 
+executor = Executor(app)
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -49,9 +53,10 @@ def upload():
         filename = digest.hexdigest() + secure_filename(file.filename)
 
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.seek(0)
         file.save(filepath)
 
-        rotate(filename, angle_of_rotation, page_number, file)
+        rotate(filename, angle_of_rotation, page_number)
 
         return jsonify({"status": "processing", "downloadURL": f"/output_{filename}"})
 

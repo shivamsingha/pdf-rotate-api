@@ -3,8 +3,8 @@ from PyPDF2 import PdfReader, PdfWriter
 from constants import UPLOAD_FOLDER
 
 
-def rotate(filename, angle_of_rotation, page_number, file):
-    reader = PdfReader(file)
+def rotate(filename, angle_of_rotation, page_number):
+    reader = PdfReader(f"{UPLOAD_FOLDER}/{filename}")
 
     with open(f"{UPLOAD_FOLDER}/output_{filename}.json", "w") as fp:
         fp.write(json.dumps({"status": "processing"}))
